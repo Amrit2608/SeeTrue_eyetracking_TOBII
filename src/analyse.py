@@ -34,7 +34,7 @@ if __name__ == "__main__":
                 >> [ [ [0,10], [20,30] ], [ [10,20], [30,40] ] ]
                 it means that 
                     index 0 to 9 are fixation  
-                    index 100 to 109 are fixation
+                    index 20 to 29 are fixation
                     index 10 to 19 are saccade
                     index 30 to 39 are saccade    
         events_ours: 
