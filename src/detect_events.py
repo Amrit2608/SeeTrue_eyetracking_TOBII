@@ -24,7 +24,7 @@ def load_data(filename: str, user_ids: List[int]) -> List[DataRow]:
         for line in csv_reader:
             user_id = int(line[0][1:])
             if user_id in user_ids:
-                known = bool(line[1])
+                known = bool(line[1] == 'true')
                 xs = np.array(line[2::2], dtype=np.float64)
                 ys = np.array(line[3::2], dtype=np.float64)
                 xs_deg, ys_deg = convertPixelPositions2DegreePositions(xs, ys)
