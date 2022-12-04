@@ -158,12 +158,12 @@ if __name__ == "__main__":
     legend = ['subject_id','MFD_true','MFD_SD_true','MFD_false','MFD_SD_false','MSA_true','MSA_SD_true','MSA_false',
                 'MSA_SD_false','MFD_overall','MFD_overall_SD','MSA_overall','MSA_overall_SD']
 
-    with open('data/result.csv', 'w') as f:
+    with open('data/ours1.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerow(legend)
         for idx,val in id_dict.items():
-            writer.writerow([idx,MFD[idx][0], MFD[idx][1], MFD_SD[idx][0], MFD_SD[idx][1], 
-                                MSA[idx][0], MSA[idx][1], MSA_SD[idx][0], MSA_SD[idx][1], 
+            writer.writerow([idx,MFD[idx][0], MFD_SD[idx][0], MFD[idx][1], MFD_SD[idx][1], 
+                                MSA[idx][0], MSA_SD[idx][0], MSA[idx][1], MSA_SD[idx][1], 
                                 MFD_overall[idx], MFD_overall_SD[idx], MSA_overall[idx], MSA_overall_SD[idx]])
 
     # print(MFD[:,:,1])
