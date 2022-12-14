@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import plot
 import csv
+import math
 FIXATION = 0
 SACCADE = 1
 
@@ -68,18 +69,10 @@ if __name__ == "__main__":
         fixation[key] = [[[],[],[]], [[],[],[]]]
         saccade[key] = [[[],[],[]], [[],[],[]]]
 
-    for i, d in enumerate(data):
-        
-        # fixation_num[id_dict[d['id']]][int(d['known'])][0] += len(d['grouped_events_uneye'][FIXATION])
-        # fixation_num[id_dict[d['id']]][int(d['known'])][1] += len(d['grouped_events_ours_list'][0][FIXATION])
-        # fixation_num[id_dict[d['id']]][int(d['known'])][2] += len(d['grouped_events_ours_list'][1][FIXATION])
+    def calculateL2Distance(point1, point2):
+        return math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
 
-        # fixation_time[id_dict[d['id']]][int(d['known'])][0] += sum([fixation_idx[-1]-fixation_idx[0]
-        #                         for fixation_idx in d['grouped_events_uneye'][FIXATION]])
-        # fixation_time[id_dict[d['id']]][int(d['known'])][1] += sum([fixation_idx[-1]-fixation_idx[0]
-        #                         for fixation_idx in d['grouped_events_ours_list'][0][FIXATION]])
-        # fixation_time[id_dict[d['id']]][int(d['known'])][2] += sum([fixation_idx[-1]-fixation_idx[0]
-        #                         for fixation_idx in d['grouped_events_ours_list'][1][FIXATION]])
+    for i, d in enumerate(data):
         
         fixation[d['id']][int(d['known'])][0].extend([fixation_idx[-1]-fixation_idx[0]
                                 for fixation_idx in d['grouped_events_uneye'][FIXATION]])
@@ -88,23 +81,15 @@ if __name__ == "__main__":
         fixation[d['id']][int(d['known'])][2].extend([fixation_idx[-1]-fixation_idx[0]
                                 for fixation_idx in d['grouped_events_ours_list'][1][FIXATION]])
 
-        # saccade_num[id_dict[d['id']]][int(d['known'])][0] += len(d['grouped_events_uneye'][SACCADE])
-        # saccade_num[id_dict[d['id']]][int(d['known'])][1] += len(d['grouped_events_ours_list'][0][SACCADE])
-        # saccade_num[id_dict[d['id']]][int(d['known'])][2] += len(d['grouped_events_ours_list'][1][SACCADE])
-
-        # saccade_time[id_dict[d['id']]][int(d['known'])][0] += sum([saccade_idx[-1]-saccade_idx[0]
-        #                         for saccade_idx in d['grouped_events_uneye'][SACCADE]])
-        # saccade_time[id_dict[d['id']]][int(d['known'])][1] += sum([saccade_idx[-1]-saccade_idx[0]
-        #                         for saccade_idx in d['grouped_events_ours_list'][0][SACCADE]])
-        # saccade_time[id_dict[d['id']]][int(d['known'])][2] += sum([saccade_idx[-1]-saccade_idx[0]
-        #                         for saccade_idx in d['grouped_events_ours_list'][1][SACCADE]])
-
-        saccade[d['id']][int(d['known'])][0].extend([saccade_idx[-1]-saccade_idx[0]
-                                for saccade_idx in d['grouped_events_uneye'][SACCADE]])
-        saccade[d['id']][int(d['known'])][1].extend([saccade_idx[-1]-saccade_idx[0]
-                                for saccade_idx in d['grouped_events_ours_list'][0][SACCADE]])
-        saccade[d['id']][int(d['known'])][2].extend([saccade_idx[-1]-saccade_idx[0]
-                                for saccade_idx in d['grouped_events_ours_list'][1][SACCADE]])
+        saccade[d['id']][int(d['known'])][0].extend([calculateL2Distance([d['xs_deg'][fixation_idx[0]], d['ys_deg'][fixation_idx[-1]]],
+                                                                        [d['ys_deg'][fixation_idx[0]], d['ys_deg'][fixation_idx[-1]]])
+                                                        for fixation_idx in d['grouped_events_uneye'][SACCADE]])
+        saccade[d['id']][int(d['known'])][1].extend([calculateL2Distance([d['xs_deg'][fixation_idx[0]], d['ys_deg'][fixation_idx[-1]]],
+                                                                        [d['ys_deg'][fixation_idx[0]], d['ys_deg'][fixation_idx[-1]]])
+                                                        for fixation_idx in d['grouped_events_ours_list'][0][SACCADE]])
+        saccade[d['id']][int(d['known'])][2].extend([calculateL2Distance([d['xs_deg'][fixation_idx[0]], d['ys_deg'][fixation_idx[-1]]],
+                                                                        [d['ys_deg'][fixation_idx[0]], d['ys_deg'][fixation_idx[-1]]])
+                                                        for fixation_idx in d['grouped_events_ours_list'][1][SACCADE]])
 
         for fixation_idx in d['grouped_events_ours_list'][0][FIXATION]:
             start_idx = fixation_idx[0]
@@ -130,12 +115,18 @@ if __name__ == "__main__":
     MFD_overall_SD = {}
     MSA_overall_SD = {}
 
+    # for fixation_idx in d['grouped_events_ours_list'][0][FIXATION]:
+    #     start_idx = fixation_idx[0]
+    #     end_idx = fixation_idx[-1]
+    #     c_x = np.average(d['xs_deg'][start_idx:end_idx])
+    #     c_y = np.average(d['ys_deg'][start_idx:end_idx])
+
     # for now, we're only calculating the algorthm for ours 1
     algorithm = 1
     for idx, val in id_dict.items():
         MFD[idx] = [np.sum(fixation[idx][0][algorithm])/len(fixation[idx][0][algorithm]), 
                     np.sum(fixation[idx][1][algorithm])/len(fixation[idx][1][algorithm])]
-
+  
         MSA[idx] = [np.sum(saccade[idx][0][algorithm])/len(saccade[idx][0][algorithm]), 
                         np.sum(saccade[idx][1][algorithm])/len(saccade[idx][1][algorithm])]
 
@@ -149,11 +140,14 @@ if __name__ == "__main__":
 
         MFD_overall[idx] = np.sum(overall_fixation)/(len(overall_fixation))
         MSA_overall[idx] = np.sum(overall_saccade)/(len(overall_saccade))
+        # print('all saccade data',overall_saccade)
+
 
         MFD_overall_SD[idx] = np.std(overall_fixation)
         MSA_overall_SD[idx] = np.std(overall_saccade)
 
     # MFD_SD = np.std(MFD[:,:,1],axis=1)
+    print('MSA', MSA)
 
     legend = ['subject_id','MFD_true','MFD_SD_true','MFD_false','MFD_SD_false','MSA_true','MSA_SD_true','MSA_false',
                 'MSA_SD_false','MFD_overall','MFD_overall_SD','MSA_overall','MSA_overall_SD']
